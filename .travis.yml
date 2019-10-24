@@ -1,0 +1,24 @@
+sudo: required
+services: 
+  - docker
+
+before_install:
+  - docker build -t maheshdte/react-test -f ./client/Dockerfile.dev ./client
+
+script: 
+  - docker run maheshdte/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t maheshdte/multi-client ./client
+  - docker build -t maheshdte/multi-nginx ./nginx
+  - docker build -t maheshdte/multi-server ./server
+  -  docker build -t maheshdte/multi-worker ./worker
+ # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD' | docker login -u "$DOCKER_ID" --password-stdin
+
+ # Take those images and push to docker hub
+  - docker push maheshdte/multi-client
+  - docker push maheshdte/multi-nginx
+  - docker push maheshdte/multi-server
+  - docker push maheshdte/multi-worker
+
